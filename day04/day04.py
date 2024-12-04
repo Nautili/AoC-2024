@@ -1,4 +1,5 @@
 import sys
+from collections import defaultdict
 
 
 def check_location(grid, row, col):
@@ -23,18 +24,15 @@ def get_middles(grid, row, col, middles):
         for col_diff in [-1, 1]:
             if all(grid[row + i * row_diff][col + i *
                                             col_diff] == c for i, c in enumerate('MAS')):
-                new_a = (row + row_diff, col + col_diff)
-                if new_a not in middles:
-                    middles[new_a] = 0
-                middles[new_a] += 1
+                middles[(row + row_diff, col + col_diff)] += 1
 
 
 def check_mas(grid):
-    middles = {}
+    middles = defaultdict(int)
     for row in range(3, len(grid) - 3):
         for col in range(3, len(grid[row]) - 3):
             get_middles(grid, row, col, middles)
-    return sum(v > 1 for _, v in middles.items())
+    return sum(v > 1 for v in middles.values())
 
 
 def main():
