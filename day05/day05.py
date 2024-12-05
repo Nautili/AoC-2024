@@ -2,24 +2,6 @@ import sys
 from collections import defaultdict
 
 
-def is_valid(order, manual):
-    seen = set()
-    for val in manual:
-        seen.add(val)
-        for next in order[val]:
-            if next in seen:
-                return False
-    return True
-
-
-def count_valid(order, manuals):
-    valid = 0
-    for manual in manuals:
-        if (is_valid(order, manual)):
-            valid += manual[len(manual) // 2]
-    return valid
-
-
 def get_valid_order(order, manual):
     seen = set()
     for i, val in enumerate(manual):
@@ -29,16 +11,19 @@ def get_valid_order(order, manual):
                 manual[manual.index(next)], manual[i] = \
                     manual[i], manual[manual.index(next)]
                 get_valid_order(order, manual)
-                return
+                return False  # signal this was initially out of order
+    return True  # signal this was initially in order
 
 
 def fix_valid(order, manuals):
     valid = 0
+    invalid = 0
     for manual in manuals:
-        if (not is_valid(order, manual)):
-            get_valid_order(order, manual)
+        if (get_valid_order(order, manual)):
             valid += manual[len(manual) // 2]
-    return valid
+        else:
+            invalid += manual[len(manual) // 2]
+    return valid, invalid
 
 
 def main():
@@ -52,8 +37,10 @@ def main():
                 order[int(before)] += [int(after)]
             elif ',' in line:
                 manuals += [[int(val) for val in line.split(',')]]
-        print(count_valid(order, manuals))
-        print(fix_valid(order, manuals))
+
+        valid, invalid = fix_valid(order, manuals)
+        print(valid)
+        print(invalid)
 
 
 if __name__ == '__main__':
