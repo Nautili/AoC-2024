@@ -19,23 +19,21 @@ def mul(m, a):
     return tuple(m * a_val for a_val in a)
 
 
-def add_single_antinode(left, right, grid, antinodes):
+def add_single_antinode(left, right, grid, antinodes, k=1):
     delta = sub(left, right)
-    if in_bounds(grid, add(left, delta)):
-        antinodes.add(add(left, delta))
-    if in_bounds(grid, sub(right, delta)):
-        antinodes.add(sub(right, delta))
+    added = False
+    if in_bounds(grid, add(left, mul(k, delta))):
+        antinodes.add(add(left, mul(k, delta)))
+        added = True
+    if in_bounds(grid, sub(right, mul(k, delta))):
+        antinodes.add(sub(right, mul(k, delta)))
+        added = True
+    return added
 
 
 def add_all_antinodes(left, right, grid, antinodes):
-    delta = sub(left, right)
     k = 0
-    while in_bounds(grid, add(left, mul(k, delta))):
-        antinodes.add(add(left, mul(k, delta)))
-        k += 1
-    k = 0
-    while in_bounds(grid, sub(right, mul(k, delta))):
-        antinodes.add(sub(right, mul(k, delta)))
+    while add_single_antinode(left, right, grid, antinodes, k):
         k += 1
 
 
