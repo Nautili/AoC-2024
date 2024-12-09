@@ -27,29 +27,27 @@ def get_checksum(line):
 
 def get_block_checksum(line):
     original = copy.copy(line)
-    out_length = sum(line)
     out_index = 0
     front = 0
     total = 0
-    while out_index < out_length:
-        out_index += original[front] - line[front]
-        while out_index < out_length and line[front] > 0:
-            total += out_index * (front // 2)
-            out_index += 1
-            line[front] -= 1
-        front += 1
-        back = len(line) - 1
-        while back >= 0 and out_index < out_length and line[front] > 0:
+    while front < len(line):
+        if front % 2 == 0:  # process existing block
+            out_index += original[front] - line[front]
+            while line[front] > 0:
+                total += out_index * (front // 2)
+                out_index += 1
+                line[front] -= 1
+        else:  # process gap
             back = len(line) - 1
-            while back >= 0 and (line[back] == 0 or line[back] > line[front]):
-                back -= 2
-            if back >= 0:
-                while line[back] > 0:
-                    total += out_index * (back // 2)
-                    out_index += 1
-                    line[front] -= 1
-                    line[back] -= 1
-        if front < len(line):
+            while back >= 0 and line[front] > 0:
+                while back >= 0 and (line[back] == 0 or line[back] > line[front]):
+                    back -= 2
+                if back >= 0:
+                    while line[back] > 0:
+                        total += out_index * (back // 2)
+                        out_index += 1
+                        line[front] -= 1
+                        line[back] -= 1
             out_index += line[front]
         front += 1
     return total
