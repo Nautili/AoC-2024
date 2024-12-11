@@ -1,30 +1,31 @@
 import sys
-from functools import cache
+from collections import defaultdict
 
 
-@cache
-def get_stone_count(stone, count):
-    if count == 0:
-        return 1
+def get_stone_count(stones, n):
+    counts = defaultdict(int)
+    for stone in stones:
+        counts[stone] = 1
 
-    if stone == 0:
-        return get_stone_count(1, count - 1)
-    elif len(s := str(stone)) % 2 == 0:
-        return get_stone_count(int(s[:len(s)//2]), count - 1) + \
-            get_stone_count(int(s[len(s)//2:]), count - 1)
-    else:
-        return get_stone_count(stone * 2024, count - 1)
-
-
-def get_stones(line, count):
-    return sum(get_stone_count(stone, count) for stone in line)
+    for _ in range(n):
+        new_counts = defaultdict(int)
+        for stone, count in counts.items():
+            if stone == 0:
+                new_counts[1] += count
+            elif len(s := str(stone)) % 2 == 0:
+                new_counts[int(s[:len(s)//2])] += count
+                new_counts[int(s[len(s)//2:])] += count
+            else:
+                new_counts[stone * 2024] += count
+        counts = new_counts
+    return sum(counts.values())
 
 
 def main():
     with open(sys.argv[1]) as f:
         line = [int(val) for val in f.readline().strip().split()]
-    print(get_stones(line, 25))
-    print(get_stones(line, 75))
+    print(get_stone_count(line, 25))
+    print(get_stone_count(line, 75))
 
 
 if __name__ == '__main__':
