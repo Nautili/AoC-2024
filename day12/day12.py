@@ -31,9 +31,9 @@ def get_area_price(row_s, col_s, grid, seen):
                     seen.add(new_loc)
             else:
                 perimeter += 1
-                # wlog, assume that the perimeter is upwards. If the perimeter is the "leftmost"
-                # part of the side, count it. This falls under two cases, with the perimeters marked
-                # with a '~' as the part to count:
+                # the trick is to find a way to count corners. wlog, assume that the perimeter is
+                # facing upwards. If the perimeter is the "leftmost" part of the side, count it.
+                # Left and right turns both need to be counted.
                 #
                 # 1. ...
                 #    .+~
@@ -41,7 +41,7 @@ def get_area_price(row_s, col_s, grid, seen):
                 #
                 # 2. x|.
                 #    -+~
-                #    .|o
+                #    ?|o
 
                 row_turn = row - d_col
                 col_turn = col + d_row
