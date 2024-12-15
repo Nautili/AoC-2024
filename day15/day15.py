@@ -1,7 +1,7 @@
 import sys
-from time import sleep
 
 DIRS = {'^': (-1, 0), '>': (0, 1), 'v': (1, 0), '<': (0, -1)}
+WIDE_CHARS = {'#': '##', 'O': '[]', '.': '..', '@': '@.'}
 
 
 def find_robot(grid):
@@ -27,10 +27,6 @@ def simulate_moves(grid, moves):
             col += d_col
 
 
-def swap(grid, row, col, new_row, new_col):
-    grid[row][col], grid[new_row][new_col] = grid[new_row][new_col], grid[row][col]
-
-
 def push(grid, move, row, col, do_swap=False):
     if grid[row][col] == '#':
         return False
@@ -54,7 +50,7 @@ def push(grid, move, row, col, do_swap=False):
                 will_move = push(grid, move, row, col - 1, do_swap)
             grid[row][col] = ']'
     if do_swap:
-        swap(grid, row, col, new_row, new_col)
+        grid[row][col], grid[new_row][new_col] = grid[new_row][new_col], grid[row][col]
     return will_move
 
 
@@ -63,10 +59,6 @@ def simulate_wide_moves(grid, moves):
         row, col = find_robot(grid)
         if push(grid, move, row, col, do_swap=False):
             push(grid, move, row, col, do_swap=True)
-
-    # print(move)
-    # for line in grid:
-    #     print(''.join(line))
 
 
 def box_count(grid):
@@ -83,14 +75,7 @@ def widen_grid(grid):
     for row in grid:
         line = []
         for val in row:
-            if val == '#':
-                line += ['#', '#']
-            elif val == 'O':
-                line += ['[', ']']
-            elif val == '.':
-                line += ['.', '.']
-            elif val == '@':
-                line += ['@', '.']
+            line += list(WIDE_CHARS[val])
         wide_grid += [line]
     return wide_grid
 
@@ -104,8 +89,8 @@ def main():
                 grid += [list(line.strip())]
             elif line[0] in '<^>v':
                 moves += list(line.strip())
-    wide_grid = widen_grid(grid)
 
+    wide_grid = widen_grid(grid)
     simulate_moves(grid, moves)
     print(box_count(grid))
     simulate_wide_moves(wide_grid, moves)
