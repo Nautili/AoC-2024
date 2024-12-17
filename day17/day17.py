@@ -13,24 +13,25 @@ def run_program(mem, regs):
     output = []
 
     while ip < len(mem):
+        c_val = combo(mem[ip + 1], regs)
         match mem[ip]:
             case 0:  # adv
-                regs[0] = regs[0] >> combo(mem[ip + 1], regs)
+                regs[0] = regs[0] >> c_val
             case 1:  # bxl
                 regs[1] ^= mem[ip + 1]
             case 2:  # bst
-                regs[1] = combo(mem[ip + 1], regs) % 8
+                regs[1] = c_val & 0x7
             case 3:  # jnz
                 if regs[0] != 0:
                     ip = mem[ip + 1] - 2
             case 4:  # bxc
                 regs[1] ^= regs[2]
             case 5:  # out
-                output += [combo(mem[ip + 1], regs) % 8]
+                output += [c_val & 0x7]
             case 6:  # bdv
-                regs[1] = regs[0] >> combo(mem[ip + 1], regs)
+                regs[1] = regs[0] >> c_val
             case 7:  # cdv
-                regs[2] = regs[0] >> combo(mem[ip + 1], regs)
+                regs[2] = regs[0] >> c_val
         ip += 2
     return output
 
