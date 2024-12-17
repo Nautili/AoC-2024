@@ -37,15 +37,16 @@ def run_program(mem, regs):
 
 def find_quine(program):
     pending = deque()
-    pending.append((len(program) - 1, 0))
+    pending.append(0)
 
     while pending:
-        cur_ord, a = pending.popleft()
-        for val in range(a << 3, (a + 1) << 3):
-            if run_program(program, [val, 0, 0])[0] == program[cur_ord]:
-                if cur_ord == 0:
+        a = pending.popleft() << 3
+        for val in range(a, a + 8):
+            out = run_program(program, [val, 0, 0])
+            if out[0] == program[-len(out)]:
+                if out == program:
                     return val
-                pending.append((cur_ord - 1, val))
+                pending.append(val)
 
 
 def main():
