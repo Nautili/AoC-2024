@@ -3,27 +3,27 @@ from collections import deque
 
 
 def combo(op, regs):
-    if op <= 3:
-        return op
-    return regs[op - 4]
+    if 4 <= op <= 6:
+        return regs[op - 4]
+    return op
 
 
 def run_program(mem, regs):
-    ip = 0
+    pc = 0
     output = []
 
-    while ip < len(mem):
-        c_val = combo(mem[ip + 1], regs)
-        match mem[ip]:
+    while pc < len(mem):
+        c_val = combo(mem[pc + 1], regs)
+        match mem[pc]:
             case 0:  # adv
                 regs[0] = regs[0] >> c_val
             case 1:  # bxl
-                regs[1] ^= mem[ip + 1]
+                regs[1] ^= mem[pc + 1]
             case 2:  # bst
                 regs[1] = c_val & 0x7
             case 3:  # jnz
                 if regs[0] != 0:
-                    ip = mem[ip + 1] - 2
+                    pc = mem[pc + 1] - 2
             case 4:  # bxc
                 regs[1] ^= regs[2]
             case 5:  # out
@@ -32,7 +32,7 @@ def run_program(mem, regs):
                 regs[1] = regs[0] >> c_val
             case 7:  # cdv
                 regs[2] = regs[0] >> c_val
-        ip += 2
+        pc += 2
     return output
 
 
