@@ -25,9 +25,9 @@ def get_best_sequence(s, n, counts):
     cur_val = s % 10
     for i in range(n):
         s = get_next_secret_number(s)
-        cur_diff = (s % 10) - cur_val
+        cur_diff = ((s % 10) - cur_val) & 0b11111
+        cur_key = (cur_key >> 5) | (cur_diff << 15)
         cur_val = s % 10
-        cur_key = ((cur_key << 5) | (cur_diff & 0b11111)) & ((1 << 20) - 1)
 
         if i >= 3 and cur_key not in seen_sequences:
             seen_sequences.add(cur_key)
