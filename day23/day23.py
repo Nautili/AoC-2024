@@ -27,12 +27,12 @@ def get_max_clique(graph):
                 max_clique = included.copy()
             return
 
-        for start in [*remaining]:
-            get_max_clique_bk(included | {start},
-                              remaining & set(graph[start]),
-                              excluded & set(graph[start]))
-            remaining -= {start}
-            excluded |= {start}
+        for next in [*remaining]:
+            get_max_clique_bk(included | {next},
+                              remaining & set(graph[next]),
+                              excluded & set(graph[next]))
+            remaining -= {next}
+            excluded |= {next}
 
     get_max_clique_bk(included=set(),
                       remaining=set(graph.keys()),
