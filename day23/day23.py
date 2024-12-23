@@ -34,7 +34,10 @@ def get_max_clique_bk(graph, included, remaining, excluded):
 
 
 def get_max_clique(graph):
-    max_clique = get_max_clique_bk(graph, set(), set(graph.keys()), set())
+    max_clique = get_max_clique_bk(graph,
+                                   included=set(),
+                                   remaining=set(graph.keys()),
+                                   excluded=set())
     return ','.join(sorted(max_clique))
 
 
