@@ -16,28 +16,27 @@ def get_three_cliques(graph):
     return count
 
 
-def get_max_clique_bk(graph, included, remaining, excluded):
-    if not remaining and not excluded:
-        return included
-
-    best_set = set()
-    for start in [*remaining]:
-        next_set = get_max_clique_bk(graph,
-                                     included | {start},
-                                     remaining & set(graph[start]),
-                                     excluded & set(graph[start]))
-        if len(next_set) > len(best_set):
-            best_set = next_set
-        remaining -= {start}
-        excluded |= {start}
-    return best_set
-
-
 def get_max_clique(graph):
-    max_clique = get_max_clique_bk(graph,
-                                   included=set(),
-                                   remaining=set(graph.keys()),
-                                   excluded=set())
+    max_clique = set()
+
+    def get_max_clique_bk(included, remaining, excluded):
+        nonlocal max_clique
+
+        if not remaining and not excluded:
+            if len(included) > len(max_clique):
+                max_clique = included.copy()
+            return
+
+        for start in [*remaining]:
+            get_max_clique_bk(included | {start},
+                              remaining & set(graph[start]),
+                              excluded & set(graph[start]))
+            remaining -= {start}
+            excluded |= {start}
+
+    get_max_clique_bk(included=set(),
+                      remaining=set(graph.keys()),
+                      excluded=set())
     return ','.join(sorted(max_clique))
 
 
