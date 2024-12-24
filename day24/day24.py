@@ -31,6 +31,13 @@ class Gate:
         return reduce(op_map[self.type], input_vals)
 
 
+def to_gate_id(val):
+    id = str(val)
+    if len(id) < 2:
+        id = '0' + id
+    return id
+
+
 def propagate(gates):
     evaluated = {}
     z_vals = []
@@ -44,24 +51,70 @@ def propagate(gates):
     return int(''.join(str(val) for _, val in sorted(z_vals))[::-1], 2)
 
 
-def test_values(gates):
+def get_bad_gates(gates):
+    # clear gates
     input_len = 0
     for name, gate in gates.items():
         if name[0] in 'xy':
             input_len = max(input_len, int(name[1:]))
             gate.value = 0
 
+    # flip one bit at a time
+    bad_gates = set()
     for i in range(input_len + 1):
-        id = str(i)
-        if len(id) < 2:
-            id = '0' + id
+        id = to_gate_id(i)
+
         gates['x' + id].value = 1
-        # gates['y' + id].value = 1
-        val = propagate(gates)
-        if val != 1 << (i):
-            print(id, val)
+        if propagate(gates) != (1 << i):
+            bad_gates.add(i)
         gates['x' + id].value = 0
-        # gates['y' + id].value = 0
+
+    return list(bad_gates)
+
+
+def find_carry_name(gates, bad_gate):
+    prev_out = 'z' + to_gate_id(bad_gate - 1)
+    prev_inputs = set(gates[prev_out].inputs)
+    for add_carry, add_gate in gates.items():
+        if add_carry != prev_out and set(add_gate.inputs) == prev_inputs:
+            for out_carry, out_gate in gates.items():
+                if add_carry in out_gate.inputs:
+                    return out_carry
+
+
+def find_other_input(gates, known_gate, target_type):
+    for gate in gates.values():
+        if gate.type == target_type and known_gate in gate.inputs:
+            for input in gate.inputs:
+                if input != known_gate:
+                    return input
+
+
+def find_out_gate(gates, inputs, target_type):
+    for name, gate in gates.items():
+        if gate.type == target_type and set(inputs) == set(gate.inputs):
+            return name
+
+
+def fix_half_adder(gates, bad_gate):
+    prev_carry = find_carry_name(gates, bad_gate)
+    one_bit = find_other_input(gates, prev_carry, GateType.XOR)
+    maybe_zout = find_out_gate(gates, [one_bit, prev_carry], GateType.XOR)
+    if maybe_zout[0] != 'z':
+        return [maybe_zout, 'z' + to_gate_id(bad_gate)]
+
+    raw_inputs = [prefix + to_gate_id(bad_gate) for prefix in 'xy']
+    maybe_one_bit = find_out_gate(gates, raw_inputs, GateType.XOR)
+    if one_bit != maybe_one_bit:
+        return [maybe_one_bit, one_bit]
+
+
+def get_swapped_gates(gates):
+    bad_gates = get_bad_gates(gates)
+    swaps = []
+    for bad_gate in bad_gates:
+        swaps += fix_half_adder(gates, bad_gate)
+    return ','.join(sorted(swaps))
 
 
 def main():
@@ -76,7 +129,7 @@ def main():
                 gates[name] = Gate(type=GateType[gate_type], inputs=[i1, i2])
 
     print(propagate(gates))
-    test_values(gates)
+    print(get_swapped_gates(gates))
 
 
 if __name__ == '__main__':
