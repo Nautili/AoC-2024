@@ -74,6 +74,9 @@ def get_bad_gates(gates):
 
 def find_carry_name(gates, bad_gate):
     prev_out = 'z' + to_gate_id(bad_gate - 1)
+    if prev_out not in gates:
+        return None
+
     prev_inputs = set(gates[prev_out].inputs)
     for add_carry, add_gate in gates.items():
         if add_carry != prev_out and set(add_gate.inputs) == prev_inputs:
@@ -97,14 +100,21 @@ def find_out_gate(gates, inputs, target_type):
 
 
 def fix_half_adder(gates, bad_gate):
+    raw_inputs = [prefix + to_gate_id(bad_gate) for prefix in 'xy']
+    maybe_one_bit = find_out_gate(gates, raw_inputs, GateType.XOR)
     prev_carry = find_carry_name(gates, bad_gate)
+
+    # handle case where first gate is bad
+    if not prev_carry:
+        return [maybe_one_bit, 'z' + to_gate_id(bad_gate)]
+
     one_bit = find_other_input(gates, prev_carry, GateType.XOR)
     maybe_zout = find_out_gate(gates, [one_bit, prev_carry], GateType.XOR)
+    # handle case where out gate has swapped
     if maybe_zout[0] != 'z':
         return [maybe_zout, 'z' + to_gate_id(bad_gate)]
 
-    raw_inputs = [prefix + to_gate_id(bad_gate) for prefix in 'xy']
-    maybe_one_bit = find_out_gate(gates, raw_inputs, GateType.XOR)
+    # handle case where single bit addition gate is swapped
     if one_bit != maybe_one_bit:
         return [maybe_one_bit, one_bit]
 
@@ -114,6 +124,7 @@ def get_swapped_gates(gates):
     swaps = []
     for bad_gate in bad_gates:
         swaps += fix_half_adder(gates, bad_gate)
+    swaps = [val for val in swaps if val is not None]
     return ','.join(sorted(swaps))
 
 
