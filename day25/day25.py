@@ -2,14 +2,7 @@ import sys
 
 
 def get_counts(block):
-    counts = []
-    for col in range(len(block[0])):
-        cur_count = 0
-        for row in range(len(block)):
-            if block[row][col] == '#':
-                cur_count += 1
-        counts += [cur_count]
-    return counts
+    return [col.count('#') for col in zip(*block)]
 
 
 def get_valid_combos(keys, locks):
